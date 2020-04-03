@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Contact;
+// use App\Contact;
 use App\CsvData;
+use App\Hospital;
 use App\Http\Requests\CsvImportRequest;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -22,7 +23,7 @@ class ImportController extends Controller
         $path = $request->file('csv_file')->getRealPath();
 
         if ($request->has('header')) {
-            $data = Excel::load($path, function($reader) {})->get()->toArray();
+            $data = Excel::load($path, function ($reader) {})->get()->toArray();
         } else {
             $data = array_map('str_getcsv', file($path));
         }
@@ -39,13 +40,13 @@ class ImportController extends Controller
             $csv_data_file = CsvData::create([
                 'csv_filename' => $request->file('csv_file')->getClientOriginalName(),
                 'csv_header' => $request->has('header'),
-                'csv_data' => json_encode($data)
+                'csv_data' => json_encode($data),
             ]);
         } else {
             return redirect()->back();
         }
 
-        return view('import_fields', compact( 'csv_header_fields', 'csv_data', 'csv_data_file'));
+        return view('import_fields', compact('csv_header_fields', 'csv_data', 'csv_data_file'));
 
     }
 
@@ -54,7 +55,7 @@ class ImportController extends Controller
         $data = CsvData::find($request->csv_data_file_id);
         $csv_data = json_decode($data->csv_data, true);
         foreach ($csv_data as $row) {
-            $contact = new Contact();
+            $contact = new Hospital();
             foreach (config('app.db_fields') as $index => $field) {
                 if ($data->csv_header) {
                     $contact->$field = $row[$request->fields[$field]];
